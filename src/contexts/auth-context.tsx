@@ -46,24 +46,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [is2FAPending, setIs2FAPending] = useState(false);
   const [permissions, setPermissions] = useState<PermissionResponse[]>([]);
 
-  // Load user from localStorage on mount
+  // Load user from localStorage on mount, then try to refresh from API
   useEffect(() => {
-    const loadUser = () => {
+    const loadUser = async () => {
       try {
         const storedUser = localStorage.getItem('user');
         const accessToken = localStorage.getItem('access_token');
 
         if (storedUser && accessToken) {
+          // Load from localStorage first for immediate UI
           setUser(JSON.parse(storedUser));
+          setIsLoading(false);
+          // Then try to refresh from API to sync with cookies (async, don't block)
+          refreshUser().catch((error) => {
+            // If refresh fails, keep the localStorage user
+            console.error('Error refreshing user from API:', error);
+          });
+        } else {
+          // No localStorage, try to get from API (cookies might have token)
+          try {
+            const response = await apiClient.get<UserResponse>('/auth/me');
+            if (response.success && response.data) {
+              setUser(response.data);
+              localStorage.setItem('user', JSON.stringify(response.data));
+              // Refresh 2FA status and permissions
+              const [statusResponse, permissionsResponse] = await Promise.all([
+                twoFAService.get2FAStatus().catch(() => ({ success: false, data: { enabled: false } })),
+                adminService.getMyPermissions().catch(() => ({ success: false, data: { permissions: [] } })),
+              ]);
+              if (statusResponse.success && statusResponse.data) {
+                setIs2FAEnabled(statusResponse.data.enabled || false);
+                setIs2FAPending(statusResponse.data.enabled && 'verified' in statusResponse.data && statusResponse.data.verified === false);
+              }
+              if (permissionsResponse.success && permissionsResponse.data) {
+                setPermissions(permissionsResponse.data.permissions || []);
+              }
+            }
+          } catch (error) {
+            // No valid session
+            console.error('No valid session found:', error);
+          } finally {
+            setIsLoading(false);
+          }
         }
       } catch (error) {
         console.error('Error loading user from storage:', error);
-      } finally {
         setIsLoading(false);
       }
     };
 
     loadUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Refresh user data from API

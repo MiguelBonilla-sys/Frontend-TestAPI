@@ -56,7 +56,14 @@ export default function DashboardPage() {
   }
 
   if (!isAuthenticated || !user) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Redirigiendo al login...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
