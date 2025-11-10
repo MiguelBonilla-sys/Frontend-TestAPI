@@ -118,6 +118,14 @@ export interface PermissionResponse {
   description: string;
 }
 
+export interface MyPermissionsResponse {
+  user_id: number;
+  user_email: string;
+  user_role: string;
+  permissions: PermissionResponse[];
+  total_permissions: number;
+}
+
 export interface RolePermissionsResponse {
   role: RoleResponse;
   permissions: PermissionResponse[];
@@ -312,9 +320,15 @@ export interface UserDetailResponse extends ApiResponse<UserResponse> {
 
 export interface SystemStatsData {
   total_users: number;
-  total_videojuegos: number;
-  total_desarrolladoras: number;
-  roles_count: Record<string, number>;
+  active_users: number;
+  inactive_users: number;
+  total_roles: number;
+  admin_users?: number;
+  regular_users?: number;
+  // Campos adicionales que pueden venir del backend
+  total_videojuegos?: number;
+  total_desarrolladoras?: number;
+  roles_count?: Record<string, number>;
 }
 
 export interface SystemStatsResponse extends ApiResponse<SystemStatsData> {

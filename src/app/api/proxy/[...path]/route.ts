@@ -24,9 +24,9 @@ async function handleRequest(
     // Build the target URL
     const targetUrl = `${API_BASE_URL}/${path}${url.search}`;
 
-    // Get access token from cookies
+    // Get access token from cookies (Server Actions)
     const cookieStore = await cookies();
-    const accessToken = cookieStore.get('access_token')?.value;
+    const accessTokenFromCookie = cookieStore.get('access_token')?.value;
 
     // Prepare headers
     const headers: HeadersInit = {
@@ -34,15 +34,14 @@ async function handleRequest(
       'Accept': 'application/json',
     };
 
-    // Add authorization header if token exists
-    if (accessToken) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
-    }
-
-    // Copy specific headers from the original request
+    // Priority: 1) Header Authorization from client, 2) Cookie token
     const authHeader = request.headers.get('Authorization');
-    if (authHeader && !accessToken) {
+    if (authHeader) {
+      // Client sent token in header (from localStorage via apiClient)
       headers['Authorization'] = authHeader;
+    } else if (accessTokenFromCookie) {
+      // Use token from cookie (from Server Actions)
+      headers['Authorization'] = `Bearer ${accessTokenFromCookie}`;
     }
 
     // Prepare request options

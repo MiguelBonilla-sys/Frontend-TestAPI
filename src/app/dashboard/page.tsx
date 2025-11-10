@@ -2,18 +2,19 @@
 
 /**
  * Dashboard Page
- * Protected page that shows user info and provides access to features
+ * Main dashboard after login - clean and organized
  */
 
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { videojuegosService } from '@/services/videojuegos.service';
-import { desarrolladorasService } from '@/services/desarrolladoras.service';
+import { DashboardLayout } from '@/components/dashboard-layout';
 import type { EstadisticasData } from '@/types/api';
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<EstadisticasData | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -27,13 +28,9 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [videojuegosStats, desarrolladorasStats] = await Promise.all([
-          videojuegosService.getStatistics(),
-          desarrolladorasService.getStatistics(),
-        ]);
-
-        if (videojuegosStats.success && videojuegosStats.data) {
-          setStats(videojuegosStats.data);
+        const response = await videojuegosService.getStatistics();
+        if (response.success && response.data) {
+          setStats(response.data);
         }
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -47,16 +44,11 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated]);
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/login');
-  };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando...</p>
         </div>
       </div>
@@ -68,155 +60,211 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Bienvenido, {user.email}
-              </p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Cerrar Sesión
-            </button>
-          </div>
+    <DashboardLayout>
+      {/* Welcome Section */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          Bienvenido, {user.email}
+        </h2>
+        <p className="text-gray-600">
+          Gestiona tu catálogo de videojuegos desde aquí
+        </p>
+        <div className="mt-4 flex items-center space-x-4">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            Rol: {user.role}
+          </span>
+          {user.is_active && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+              ✓ Activo
+            </span>
+          )}
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* User Info Card */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Información de Usuario
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">Email</p>
-              <p className="font-medium text-gray-900">{user.email}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Rol</p>
-              <p className="font-medium text-gray-900 capitalize">{user.role}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Estado</p>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                {user.is_active ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Statistics Cards */}
+      {/* Statistics Section */}
         {loadingStats ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Cargando estadísticas...</p>
+          <div className="bg-white rounded-lg shadow p-8 mb-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+              <p className="mt-4 text-sm text-gray-600">Cargando estadísticas...</p>
+            </div>
           </div>
         ) : stats ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Videojuegos</p>
-                  <p className="text-3xl font-bold text-indigo-600">
-                    {stats.total_videojuegos}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">🎮</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Categorías</p>
-                  <p className="text-3xl font-bold text-green-600">
-                    {stats.categorias_unicas}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">📁</span>
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              Resumen del Catálogo
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white rounded-lg shadow p-6 border-l-4 border-indigo-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                      Total Videojuegos
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {stats.total_videojuegos}
+                    </p>
+                  </div>
+                  <div className="text-4xl">🎮</div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Precio Promedio</p>
-                  <p className="text-3xl font-bold text-blue-600">
-                    ${stats.precio_promedio.toFixed(2)}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">💰</span>
+              <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                      Categorías
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {stats.categorias_unicas}
+                    </p>
+                  </div>
+                  <div className="text-4xl">📁</div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Valoración Media</p>
-                  <p className="text-3xl font-bold text-yellow-600">
-                    {stats.valoracion_promedio.toFixed(1)}/10
-                  </p>
+              <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                      Precio Promedio
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      ${stats.precio_promedio.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="text-4xl">💰</div>
                 </div>
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">⭐</span>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                      Valoración Media
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {stats.valoracion_promedio.toFixed(1)}
+                      <span className="text-lg text-gray-500">/10</span>
+                    </p>
+                  </div>
+                  <div className="text-4xl">⭐</div>
                 </div>
               </div>
             </div>
           </div>
         ) : null}
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      {/* Quick Actions */}
+        <div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">
             Acciones Rápidas
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button
-              onClick={() => router.push('/videojuegos')}
-              className="p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all text-left"
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Link
+              href="/profile"
+              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow border border-gray-200 hover:border-indigo-300"
             >
-              <div className="text-2xl mb-2">🎮</div>
-              <h3 className="font-semibold text-gray-900 mb-1">Videojuegos</h3>
-              <p className="text-sm text-gray-600">Ver y gestionar videojuegos</p>
-            </button>
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <span className="text-2xl">👤</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Mi Perfil</h4>
+                  <p className="text-sm text-gray-600">Ver y editar tu perfil</p>
+                </div>
+              </div>
+            </Link>
 
-            <button
-              onClick={() => router.push('/desarrolladoras')}
-              className="p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all text-left"
+            <Link
+              href="/videojuegos/import"
+              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow border border-gray-200 hover:border-indigo-300"
             >
-              <div className="text-2xl mb-2">🏢</div>
-              <h3 className="font-semibold text-gray-900 mb-1">Desarrolladoras</h3>
-              <p className="text-sm text-gray-600">Ver estudios de desarrollo</p>
-            </button>
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <span className="text-2xl">🎮</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Importar Videojuegos</h4>
+                  <p className="text-sm text-gray-600">Agregar juegos al catálogo</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/admin/sync-logs"
+              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow border border-gray-200 hover:border-indigo-300"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Logs de Sincronización</h4>
+                  <p className="text-sm text-gray-600">Ver historial de importaciones</p>
+                </div>
+              </div>
+            </Link>
 
             {user.role === 'superadmin' && (
-              <button
-                onClick={() => router.push('/admin')}
-                className="p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all text-left"
-              >
-                <div className="text-2xl mb-2">⚙️</div>
-                <h3 className="font-semibold text-gray-900 mb-1">Administración</h3>
-                <p className="text-sm text-gray-600">Panel de administrador</p>
-              </button>
+              <>
+                <Link
+                  href="/admin/users"
+                  className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow border border-gray-200 hover:border-indigo-300"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <span className="text-2xl">👥</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Gestionar Usuarios</h4>
+                      <p className="text-sm text-gray-600">Administrar usuarios del sistema</p>
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/admin/roles"
+                  className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow border border-gray-200 hover:border-indigo-300"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                      <span className="text-2xl">🔐</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Roles y Permisos</h4>
+                      <p className="text-sm text-gray-600">Configurar permisos del sistema</p>
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/admin/stats"
+                  className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow border border-gray-200 hover:border-indigo-300"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <span className="text-2xl">⚙️</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Estadísticas del Sistema</h4>
+                      <p className="text-sm text-gray-600">Ver métricas y estadísticas</p>
+                    </div>
+                  </div>
+                </Link>
+              </>
             )}
           </div>
         </div>
-      </main>
-    </div>
+
+      {/* Help Section */}
+      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h4 className="font-semibold text-blue-900 mb-2">💡 ¿Necesitas ayuda?</h4>
+        <p className="text-sm text-blue-800">
+          Desde aquí puedes gestionar tu catálogo de videojuegos, importar nuevos juegos desde APIs externas,
+          y si eres administrador, gestionar usuarios y permisos del sistema.
+        </p>
+      </div>
+    </DashboardLayout>
   );
 }

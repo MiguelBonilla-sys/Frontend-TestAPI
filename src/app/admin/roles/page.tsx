@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRequireAuth } from '@/contexts/auth-context';
+import { DashboardLayout } from '@/components/dashboard-layout';
 import { authService } from '@/services/auth.service';
 import { PermissionsDisplay } from '@/components/permissions-display';
 import type { RoleResponse, PermissionResponse } from '@/types/api';
@@ -66,11 +67,8 @@ export default function AdminRolesPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Roles y Permisos</h1>
-        <p className="text-gray-600 mt-1">Gestiona roles y sus permisos asociados</p>
-      </div>
+    <DashboardLayout title="Roles y Permisos" description="Gestiona roles y sus permisos asociados">
+      <div className="space-y-6">
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
@@ -131,11 +129,12 @@ export default function AdminRolesPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Mis Permisos</h2>
-        <PermissionsDisplay />
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Mis Permisos</h2>
+          <PermissionsDisplay />
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
 

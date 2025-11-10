@@ -119,7 +119,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await adminService.getMyPermissions();
 
       if (response.success && response.data) {
-        setPermissions(response.data);
+        // El backend retorna un objeto con permissions dentro
+        setPermissions(response.data.permissions || []);
       }
     } catch (error) {
       console.error('Error refreshing permissions:', error);

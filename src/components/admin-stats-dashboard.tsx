@@ -50,20 +50,20 @@ export function AdminStatsDashboard() {
       icon: '👥',
     },
     {
-      title: 'Total de Videojuegos',
-      value: stats.total_videojuegos,
+      title: 'Usuarios Activos',
+      value: stats.active_users,
       color: 'green',
-      icon: '🎮',
+      icon: '✓',
     },
     {
-      title: 'Total de Desarrolladoras',
-      value: stats.total_desarrolladoras,
-      color: 'purple',
-      icon: '🏢',
+      title: 'Usuarios Inactivos',
+      value: stats.inactive_users,
+      color: 'red',
+      icon: '✗',
     },
     {
-      title: 'Roles Activos',
-      value: Object.keys(stats.roles_count).length,
+      title: 'Total de Roles',
+      value: stats.total_roles,
       color: 'orange',
       icon: '🔑',
     },
@@ -82,6 +82,8 @@ export function AdminStatsDashboard() {
                 ? 'border-blue-500'
                 : card.color === 'green'
                 ? 'border-green-500'
+                : card.color === 'red'
+                ? 'border-red-500'
                 : card.color === 'purple'
                 ? 'border-purple-500'
                 : 'border-orange-500'
@@ -98,7 +100,7 @@ export function AdminStatsDashboard() {
         ))}
       </div>
 
-      {stats.roles_count && Object.keys(stats.roles_count).length > 0 && (
+      {(stats.roles_count && Object.keys(stats.roles_count).length > 0) && (
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución de Roles</h3>
           <div className="space-y-2">
@@ -108,6 +110,26 @@ export function AdminStatsDashboard() {
                 <span className="text-sm font-semibold text-gray-900">{count} usuarios</span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      
+      {(stats.total_videojuegos !== undefined || stats.total_desarrolladoras !== undefined) && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Estadísticas Adicionales</h3>
+          <div className="space-y-2">
+            {stats.total_videojuegos !== undefined && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">Total de Videojuegos</span>
+                <span className="text-sm font-semibold text-gray-900">{stats.total_videojuegos}</span>
+              </div>
+            )}
+            {stats.total_desarrolladoras !== undefined && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">Total de Desarrolladoras</span>
+                <span className="text-sm font-semibold text-gray-900">{stats.total_desarrolladoras}</span>
+              </div>
+            )}
           </div>
         </div>
       )}

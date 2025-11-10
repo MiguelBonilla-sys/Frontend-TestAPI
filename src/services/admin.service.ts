@@ -8,8 +8,9 @@ import type {
   ApiResponse,
   UserResponse,
   RoleResponse,
-  PermissionResponse,
+  MyPermissionsResponse,
   PaginationParams,
+  SystemStatsData,
 } from '@/types/api';
 
 export const adminService = {
@@ -48,14 +49,14 @@ export const adminService = {
   /**
    * Get system statistics
    */
-  async getSystemStats(): Promise<ApiResponse<{ total_users: number; total_videojuegos: number; total_desarrolladoras: number; roles_count: Record<string, number> }>> {
-    return apiClient.get<{ total_users: number; total_videojuegos: number; total_desarrolladoras: number; roles_count: Record<string, number> }>('/admin/stats');
+  async getSystemStats(): Promise<ApiResponse<SystemStatsData>> {
+    return apiClient.get<SystemStatsData>('/admin/stats');
   },
 
   /**
    * Get my permissions
    */
-  async getMyPermissions(): Promise<ApiResponse<PermissionResponse[]>> {
-    return apiClient.get<PermissionResponse[]>('/admin/my-permissions');
+  async getMyPermissions(): Promise<ApiResponse<MyPermissionsResponse>> {
+    return apiClient.get<MyPermissionsResponse>('/admin/my-permissions');
   },
 };

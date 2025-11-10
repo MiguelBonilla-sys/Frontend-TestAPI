@@ -9,7 +9,7 @@ import type {
   UserResponse,
   RoleResponse,
   SystemStatsData,
-  PermissionResponse,
+  MyPermissionsResponse,
   PaginationParams,
 } from '@/types/api';
 
@@ -20,7 +20,7 @@ interface UseAdminReturn {
   getUserById: (userId: number) => Promise<{ success: boolean; data?: UserResponse }>;
   getAllRoles: () => Promise<{ success: boolean; data?: RoleResponse[] }>;
   getSystemStats: () => Promise<{ success: boolean; data?: SystemStatsData }>;
-  getMyPermissions: () => Promise<{ success: boolean; data?: PermissionResponse[] }>;
+  getMyPermissions: () => Promise<{ success: boolean; data?: MyPermissionsResponse }>;
 }
 
 export function useAdmin(): UseAdminReturn {

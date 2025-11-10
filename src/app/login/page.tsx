@@ -29,8 +29,8 @@ export default function LoginPage() {
         // Store user in localStorage for client-side access
         if (result.data) {
           localStorage.setItem('user', JSON.stringify(result.data));
-          localStorage.setItem('access_token', 'stored-in-cookies');
-          localStorage.setItem('refresh_token', 'stored-in-cookies');
+          // Los tokens están en cookies (httpOnly) manejados por Server Actions
+          // El apiClient los leerá desde el proxy que lee las cookies
         }
 
         // Redirect to dashboard
@@ -131,17 +131,6 @@ export default function LoginPage() {
                 Regístrate aquí
               </Link>
             </p>
-          </div>
-
-          {/* Demo Credentials */}
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-xs font-semibold text-gray-700 mb-2">
-              💡 Credenciales de prueba:
-            </p>
-            <div className="text-xs text-gray-600 space-y-1">
-              <p>Email: test@example.com</p>
-              <p>Password: password123</p>
-            </div>
           </div>
         </div>
 

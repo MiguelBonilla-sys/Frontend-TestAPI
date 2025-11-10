@@ -11,6 +11,7 @@ import { changePasswordAction } from '@/actions/auth';
 import { PasswordStrengthChecker } from '@/components/password-strength-checker';
 import { TwoFAStatus } from '@/components/2fa-status';
 import { PermissionsDisplay } from '@/components/permissions-display';
+import { DashboardLayout } from '@/components/dashboard-layout';
 import Link from 'next/link';
 
 export default function ProfilePage() {
@@ -62,11 +63,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
-        <p className="text-gray-600 mt-1">Gestiona tu cuenta y configuración de seguridad</p>
-      </div>
+    <DashboardLayout title="Mi Perfil" description="Gestiona tu cuenta y configuración de seguridad">
+      <div className="space-y-8">
 
       {/* User Info */}
       <div className="bg-white rounded-lg shadow p-6">
@@ -185,12 +183,13 @@ export default function ProfilePage() {
         <TwoFAStatus />
       </div>
 
-      {/* Permissions */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Mis Permisos</h2>
-        <PermissionsDisplay />
+        {/* Permissions */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Mis Permisos</h2>
+          <PermissionsDisplay />
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
 

@@ -84,10 +84,17 @@ class ApiClient {
 
   /**
    * Refresh access token using refresh token
+   * Tries localStorage first, then falls back to cookies via proxy
    */
   private async refreshAccessToken(): Promise<string | null> {
-    if (!this.refreshToken) {
-      return null;
+    // Try to get refresh token from localStorage first
+    let refreshToken = this.refreshToken;
+    
+    // If no token in localStorage, the proxy will use cookie token
+    if (!refreshToken && typeof window !== 'undefined') {
+      // Try to get from localStorage again (might have been set)
+      refreshToken = localStorage.getItem('refresh_token');
+      this.refreshToken = refreshToken;
     }
 
     if (this.isRefreshing) {
@@ -102,14 +109,17 @@ class ApiClient {
     this.isRefreshing = true;
 
     try {
+      // If we have refresh token, send it. Otherwise, proxy will use cookie
+      const body = refreshToken 
+        ? JSON.stringify({ refresh_token: refreshToken })
+        : JSON.stringify({});
+
       const response = await fetch(`${API_PROXY_URL}/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          refresh_token: this.refreshToken,
-        }),
+        body,
       });
 
       if (!response.ok) {
