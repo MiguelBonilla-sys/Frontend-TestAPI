@@ -84,7 +84,7 @@ export function SyncLogsList({ initialParams }: SyncLogsListProps) {
             <select
               value={filters.status || ''}
               onChange={(e) =>
-                setFilters({ ...filters, status: e.target.value as any, page: 1 })
+                setFilters({ ...filters, status: e.target.value as 'pending' | 'success' | 'failed' | undefined, page: 1 })
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             >
@@ -99,7 +99,7 @@ export function SyncLogsList({ initialParams }: SyncLogsListProps) {
             <select
               value={filters.api_source || ''}
               onChange={(e) =>
-                setFilters({ ...filters, api_source: e.target.value as any, page: 1 })
+                setFilters({ ...filters, api_source: e.target.value as 'rawg' | 'steam' | 'igdb' | undefined, page: 1 })
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             >

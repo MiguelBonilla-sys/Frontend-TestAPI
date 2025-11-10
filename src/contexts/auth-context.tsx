@@ -14,8 +14,7 @@ import type {
   UserResponse,
   LoginRequest,
   RegisterRequest,
-  LoginResponse,
-  RegisterResponse,
+  TokenResponse,
   LogoutResponse,
   TwoFAStatusData,
   PermissionResponse,
@@ -32,7 +31,7 @@ interface AuthContextType {
   register: (data: RegisterRequest) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  enable2FA: () => Promise<{ success: boolean; message?: string; data?: any }>;
+  enable2FA: () => Promise<{ success: boolean; message?: string; data?: unknown }>;
   disable2FA: () => Promise<{ success: boolean; message?: string }>;
   get2FAStatus: () => Promise<void>;
   refreshPermissions: () => Promise<void>;
@@ -185,7 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Login function
   const login = useCallback(async (credentials: LoginRequest) => {
     try {
-      const response = await apiClient.post<LoginResponse>(
+      const response = await apiClient.post<TokenResponse>(
         '/auth/login',
         credentials,
         { useAuth: false }
@@ -223,7 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Register function
   const register = useCallback(async (data: RegisterRequest) => {
     try {
-      const response = await apiClient.post<RegisterResponse>(
+      const response = await apiClient.post<UserResponse>(
         '/auth/register',
         data,
         { useAuth: false }

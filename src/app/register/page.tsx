@@ -17,7 +17,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState<'desarrolladora' | 'editor' | 'superadmin' | ''>('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +42,7 @@ export default function RegisterPage() {
         email,
         password,
         confirm_password: confirmPassword,
-        role: role || undefined,
+        role: role === '' ? undefined : role,
       });
 
       if (result.success) {
@@ -120,7 +120,7 @@ export default function RegisterPage() {
               </label>
               <RoleSelector
                 value={role}
-                onChange={setRole}
+                onChange={(r) => setRole(r as 'desarrolladora' | 'editor' | 'superadmin' | '')}
                 disabled={loading}
               />
               <p className="mt-1 text-xs text-gray-500">

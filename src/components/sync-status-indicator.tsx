@@ -24,8 +24,6 @@ export function SyncStatusIndicator({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
     const checkStatus = async () => {
       try {
         const response = await videojuegosService.getSyncStatus(taskId);
@@ -45,7 +43,7 @@ export function SyncStatusIndicator({
     };
 
     checkStatus();
-    intervalId = setInterval(checkStatus, pollInterval);
+    const intervalId = setInterval(checkStatus, pollInterval);
 
     return () => {
       if (intervalId) clearInterval(intervalId);

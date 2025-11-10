@@ -5,9 +5,8 @@
 
 import { apiClient } from '@/lib/api-client';
 import type {
-  SyncLogListResponse,
+  ApiResponse,
   SyncLogResponse,
-  SyncLogStatisticsResponse,
   SyncLogListParams,
 } from '@/types/api';
 
@@ -15,7 +14,7 @@ export const syncLogsService = {
   /**
    * Get all sync logs with optional filters and pagination
    */
-  async getAllLogs(params?: SyncLogListParams): Promise<SyncLogListResponse> {
+  async getAllLogs(params?: SyncLogListParams): Promise<ApiResponse<SyncLogResponse[]>> {
     const queryParams = new URLSearchParams();
 
     if (params) {
@@ -27,7 +26,7 @@ export const syncLogsService = {
     }
 
     const endpoint = `/api/sync-logs/${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    return apiClient.get<SyncLogListResponse>(endpoint);
+    return apiClient.get<SyncLogResponse[]>(endpoint);
   },
 
   /**
@@ -36,7 +35,7 @@ export const syncLogsService = {
   async getRecentLogs(
     limit: number = 50,
     apiSource?: 'rawg' | 'steam' | 'igdb'
-  ): Promise<SyncLogListResponse> {
+  ): Promise<ApiResponse<SyncLogResponse[]>> {
     const queryParams = new URLSearchParams();
     queryParams.append('limit', limit.toString());
 
@@ -44,7 +43,7 @@ export const syncLogsService = {
       queryParams.append('api_source', apiSource);
     }
 
-    return apiClient.get<SyncLogListResponse>(
+    return apiClient.get<SyncLogResponse[]>(
       `/api/sync-logs/recent?${queryParams.toString()}`
     );
   },
@@ -55,7 +54,7 @@ export const syncLogsService = {
   async getLogStatistics(
     days: number = 7,
     apiSource?: 'rawg' | 'steam' | 'igdb'
-  ): Promise<SyncLogStatisticsResponse> {
+  ): Promise<ApiResponse<{ total: number; successful: number; failed: number; pending: number; success_rate: number }>> {
     const queryParams = new URLSearchParams();
     queryParams.append('days', days.toString());
 
@@ -63,7 +62,7 @@ export const syncLogsService = {
       queryParams.append('api_source', apiSource);
     }
 
-    return apiClient.get<SyncLogStatisticsResponse>(
+    return apiClient.get<{ total: number; successful: number; failed: number; pending: number; success_rate: number }>(
       `/api/sync-logs/statistics?${queryParams.toString()}`
     );
   },
@@ -71,8 +70,8 @@ export const syncLogsService = {
   /**
    * Get sync log by ID
    */
-  async getLogById(syncLogId: number): Promise<{ success: boolean; data: SyncLogResponse }> {
-    return apiClient.get<{ success: boolean; data: SyncLogResponse }>(
+  async getLogById(syncLogId: number): Promise<ApiResponse<SyncLogResponse>> {
+    return apiClient.get<SyncLogResponse>(
       `/api/sync-logs/${syncLogId}`
     );
   },

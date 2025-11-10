@@ -5,7 +5,7 @@
 
 // ============= Base Response Types =============
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   timestamp?: string;
@@ -17,7 +17,7 @@ export interface ErrorResponse {
   success: false;
   message: string;
   timestamp: string;
-  errors?: Array<Record<string, any>>;
+  errors?: Array<Record<string, unknown>>;
   error_code?: string;
   error_type?: string;
 }
@@ -400,7 +400,7 @@ export interface SyncStatusData {
   status: 'pending' | 'running' | 'completed' | 'failed';
   message: string;
   progress?: number;
-  result?: any;
+  result?: unknown;
 }
 
 export interface SyncStatusResponse extends ApiResponse<SyncStatusData> {

@@ -5,28 +5,23 @@
 
 import { apiClient } from '@/lib/api-client';
 import type {
-  VideojuegoListResponse,
-  VideojuegoDetailResponse,
+  ApiResponse,
+  VideojuegoResponse,
   VideojuegoCreateRequest,
   VideojuegoUpdateRequest,
-  VideojuegoCreateResponse,
-  VideojuegoUpdateResponse,
-  VideojuegoDeleteResponse,
   VideojuegoListParams,
   VideojuegoSearchParams,
-  CategoriasResponse,
-  EstadisticasResponse,
-  ImportBatchRequest,
-  ImportBatchResponse,
-  VideojuegoEnriquecidoResponse,
-  SyncStatusResponse,
+  VideojuegoEnriquecidoData,
+  ImportBatchResult,
+  EstadisticasData,
+  SyncStatusData,
 } from '@/types/api';
 
 export const videojuegosService = {
   /**
    * Get all videojuegos with optional filters and pagination
    */
-  async getAll(params?: VideojuegoListParams): Promise<VideojuegoListResponse> {
+  async getAll(params?: VideojuegoListParams): Promise<ApiResponse<VideojuegoResponse[]>> {
     const queryParams = new URLSearchParams();
 
     if (params) {
@@ -38,41 +33,41 @@ export const videojuegosService = {
     }
 
     const endpoint = `/api/videojuegos/${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    return apiClient.get<VideojuegoListResponse>(endpoint);
+    return apiClient.get<VideojuegoResponse[]>(endpoint);
   },
 
   /**
    * Get videojuego by ID
    */
-  async getById(id: number): Promise<VideojuegoDetailResponse> {
-    return apiClient.get<VideojuegoDetailResponse>(`/api/videojuegos/${id}`);
+  async getById(id: number): Promise<ApiResponse<VideojuegoResponse>> {
+    return apiClient.get<VideojuegoResponse>(`/api/videojuegos/${id}`);
   },
 
   /**
    * Create new videojuego (admin only)
    */
-  async create(data: VideojuegoCreateRequest): Promise<VideojuegoCreateResponse> {
-    return apiClient.post<VideojuegoCreateResponse>('/api/videojuegos/', data);
+  async create(data: VideojuegoCreateRequest): Promise<ApiResponse<VideojuegoResponse>> {
+    return apiClient.post<VideojuegoResponse>('/api/videojuegos/', data);
   },
 
   /**
    * Update videojuego (admin only)
    */
-  async update(id: number, data: VideojuegoUpdateRequest): Promise<VideojuegoUpdateResponse> {
-    return apiClient.put<VideojuegoUpdateResponse>(`/api/videojuegos/${id}`, data);
+  async update(id: number, data: VideojuegoUpdateRequest): Promise<ApiResponse<VideojuegoResponse>> {
+    return apiClient.put<VideojuegoResponse>(`/api/videojuegos/${id}`, data);
   },
 
   /**
    * Delete videojuego (admin only)
    */
-  async delete(id: number): Promise<VideojuegoDeleteResponse> {
-    return apiClient.delete<VideojuegoDeleteResponse>(`/api/videojuegos/${id}`);
+  async delete(id: number): Promise<ApiResponse> {
+    return apiClient.delete(`/api/videojuegos/${id}`);
   },
 
   /**
    * Advanced search
    */
-  async search(params: VideojuegoSearchParams): Promise<VideojuegoListResponse> {
+  async search(params: VideojuegoSearchParams): Promise<ApiResponse<VideojuegoResponse[]>> {
     const queryParams = new URLSearchParams();
 
     Object.entries(params).forEach(([key, value]) => {
@@ -81,30 +76,30 @@ export const videojuegosService = {
       }
     });
 
-    return apiClient.get<VideojuegoListResponse>(`/api/videojuegos/buscar/?${queryParams.toString()}`);
+    return apiClient.get<VideojuegoResponse[]>(`/api/videojuegos/buscar/?${queryParams.toString()}`);
   },
 
   /**
    * Get all categories
    */
-  async getCategories(): Promise<CategoriasResponse> {
-    return apiClient.get<CategoriasResponse>('/api/videojuegos/categorias/');
+  async getCategories(): Promise<ApiResponse<string[]>> {
+    return apiClient.get<string[]>('/api/videojuegos/categorias/');
   },
 
   /**
    * Get statistics
    */
-  async getStatistics(): Promise<EstadisticasResponse> {
-    return apiClient.get<EstadisticasResponse>('/api/videojuegos/estadisticas/');
+  async getStatistics(): Promise<ApiResponse<EstadisticasData>> {
+    return apiClient.get<EstadisticasData>('/api/videojuegos/estadisticas/');
   },
 
   /**
    * Import videojuegos from RAWG API
    */
   async importBatch(
-    games?: ImportBatchRequest,
+    games?: { games?: Array<{ external_id: string }> },
     count?: number
-  ): Promise<ImportBatchResponse> {
+  ): Promise<ApiResponse<ImportBatchResult>> {
     const queryParams = new URLSearchParams();
 
     if (count !== undefined) {
@@ -112,7 +107,7 @@ export const videojuegosService = {
     }
 
     const endpoint = `/api/videojuegos/importar-batch/${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    return apiClient.post<ImportBatchResponse>(endpoint, games || {});
+    return apiClient.post<ImportBatchResult>(endpoint, games || {});
   },
 
   /**
@@ -121,12 +116,12 @@ export const videojuegosService = {
   async searchHybrid(
     query: string,
     includeExternal: boolean = true
-  ): Promise<VideojuegoListResponse> {
+  ): Promise<ApiResponse<VideojuegoResponse[]>> {
     const queryParams = new URLSearchParams();
     queryParams.append('q', query);
     queryParams.append('include_external', includeExternal.toString());
 
-    return apiClient.get<VideojuegoListResponse>(
+    return apiClient.get<VideojuegoResponse[]>(
       `/api/videojuegos/buscar/?${queryParams.toString()}`
     );
   },
@@ -136,8 +131,8 @@ export const videojuegosService = {
    */
   async getEnriquecido(
     videojuegoId: number
-  ): Promise<VideojuegoEnriquecidoResponse> {
-    return apiClient.get<VideojuegoEnriquecidoResponse>(
+  ): Promise<ApiResponse<VideojuegoEnriquecidoData>> {
+    return apiClient.get<VideojuegoEnriquecidoData>(
       `/api/videojuegos/${videojuegoId}/enriquecido/`
     );
   },
@@ -145,8 +140,8 @@ export const videojuegosService = {
   /**
    * Get sync status for async task
    */
-  async getSyncStatus(taskId: string): Promise<SyncStatusResponse> {
-    return apiClient.get<SyncStatusResponse>(
+  async getSyncStatus(taskId: string): Promise<ApiResponse<SyncStatusData>> {
+    return apiClient.get<SyncStatusData>(
       `/api/videojuegos/sync-status/${taskId}/`
     );
   },

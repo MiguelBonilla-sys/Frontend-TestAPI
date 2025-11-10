@@ -51,14 +51,16 @@ describe('Authentication Flow', () => {
     (apiClient.post as jest.Mock).mockResolvedValue(mockLoginResponse);
 
     const TestComponent = () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { login } = require('@/contexts/auth-context').useAuth();
-      const [result, setResult] = React.useState<any>(null);
+      const [result, setResult] = React.useState<{ success: boolean; message: string } | null>(null);
 
       React.useEffect(() => {
         login({
           email: 'superadmin@example.com',
           password: 'SuperAdmin123!',
         }).then(setResult);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
 
       return <div>{result?.success ? 'Logged in' : 'Not logged in'}</div>;
@@ -98,14 +100,16 @@ describe('Authentication Flow', () => {
     (apiClient.post as jest.Mock).mockResolvedValue(mockErrorResponse);
 
     const TestComponent = () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { login } = require('@/contexts/auth-context').useAuth();
-      const [result, setResult] = React.useState<any>(null);
+      const [result, setResult] = React.useState<{ success: boolean; message: string } | null>(null);
 
       React.useEffect(() => {
         login({
           email: 'wrong@example.com',
           password: 'wrongpassword',
         }).then(setResult);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
 
       return <div>{result?.message || 'No error'}</div>;

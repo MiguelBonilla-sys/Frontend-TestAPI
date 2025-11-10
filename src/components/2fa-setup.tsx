@@ -20,8 +20,9 @@ export function TwoFASetup() {
   const handleEnable = async () => {
     const result = await enable2FA();
     if (result.success && result.data) {
-      setQrCode(result.data.qr_code || null);
-      setSecret(result.data.secret || null);
+      const data = result.data as { qr_code?: string; secret?: string; message: string };
+      setQrCode(data.qr_code || null);
+      setSecret(data.secret || null);
       setStep('qr');
     }
   };

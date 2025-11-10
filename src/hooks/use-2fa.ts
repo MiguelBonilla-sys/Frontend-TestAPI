@@ -12,7 +12,7 @@ interface Use2FAReturn {
   is2FAPending: boolean;
   isLoading: boolean;
   error: string | null;
-  enable2FA: () => Promise<{ success: boolean; data?: any; message?: string }>;
+  enable2FA: () => Promise<{ success: boolean; data?: unknown; message?: string }>;
   confirm2FA: (otpCode: string) => Promise<{ success: boolean; message?: string }>;
   disable2FA: () => Promise<{ success: boolean; message?: string }>;
   refreshStatus: () => Promise<void>;

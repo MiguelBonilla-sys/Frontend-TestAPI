@@ -9,13 +9,13 @@ import { useEffect, useState } from 'react';
 import { useRequireAuth } from '@/contexts/auth-context';
 import { authService } from '@/services/auth.service';
 import { PermissionsDisplay } from '@/components/permissions-display';
-import type { RoleResponse } from '@/types/api';
+import type { RoleResponse, PermissionResponse } from '@/types/api';
 
 export default function AdminRolesPage() {
   useRequireAuth();
   const [roles, setRoles] = useState<RoleResponse[]>([]);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [permissions, setPermissions] = useState<any>(null);
+  const [permissions, setPermissions] = useState<{ role: RoleResponse; permissions: PermissionResponse[] } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -113,7 +113,7 @@ export default function AdminRolesPage() {
               <div>
                 <h4 className="font-medium text-gray-900 mb-3">Permisos:</h4>
                 <div className="space-y-2">
-                  {permissions.permissions.map((perm: any, index: number) => (
+                  {permissions.permissions.map((perm: PermissionResponse, index: number) => (
                     <div key={index} className="p-3 bg-gray-50 rounded-lg">
                       <p className="font-medium text-gray-900">{perm.name}</p>
                       <p className="text-sm text-gray-600">{perm.description}</p>

@@ -6,10 +6,7 @@
 import { apiClient } from '@/lib/api-client';
 import type {
   ApiResponse,
-  Enable2FAResponse,
-  Confirm2FAResponse,
-  LoginResponse,
-  TwoFAStatusResponse,
+  TokenResponse,
   Verify2FARequest,
 } from '@/types/api';
 
@@ -17,15 +14,15 @@ export const twoFAService = {
   /**
    * Enable 2FA for the authenticated user
    */
-  async enable2FA(): Promise<Enable2FAResponse> {
-    return apiClient.post<Enable2FAResponse>('/auth/enable-2fa');
+  async enable2FA(): Promise<ApiResponse<{ qr_code?: string; secret?: string; message: string }>> {
+    return apiClient.post<{ qr_code?: string; secret?: string; message: string }>('/auth/enable-2fa');
   },
 
   /**
    * Confirm 2FA setup by verifying OTP code
    */
-  async confirm2FA(otpCode: string): Promise<Confirm2FAResponse> {
-    return apiClient.post<Confirm2FAResponse>('/auth/confirm-2fa', {
+  async confirm2FA(otpCode: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post<{ message: string }>('/auth/confirm-2fa', {
       temp_token: '', // Will be handled by server from session
       otp_code: otpCode,
     });
@@ -38,7 +35,7 @@ export const twoFAService = {
     tempToken: string,
     otpCode: string,
     challengeId?: string
-  ): Promise<LoginResponse> {
+  ): Promise<ApiResponse<TokenResponse>> {
     const payload: Verify2FARequest = {
       temp_token: tempToken,
       otp_code: otpCode,
@@ -48,7 +45,7 @@ export const twoFAService = {
       payload.challenge_id = challengeId;
     }
 
-    return apiClient.post<LoginResponse>('/auth/verify-2fa', payload, {
+    return apiClient.post<TokenResponse>('/auth/verify-2fa', payload, {
       useAuth: false,
     });
   },
@@ -56,14 +53,14 @@ export const twoFAService = {
   /**
    * Get 2FA status for the authenticated user
    */
-  async get2FAStatus(): Promise<TwoFAStatusResponse> {
-    return apiClient.get<TwoFAStatusResponse>('/auth/2fa/status');
+  async get2FAStatus(): Promise<ApiResponse<{ enabled: boolean; verified?: boolean }>> {
+    return apiClient.get<{ enabled: boolean; verified?: boolean }>('/auth/2fa/status');
   },
 
   /**
    * Disable 2FA for the authenticated user
    */
   async disable2FA(): Promise<ApiResponse> {
-    return apiClient.delete<ApiResponse>('/auth/disable-2fa');
+    return apiClient.delete('/auth/disable-2fa');
   },
 };

@@ -6,11 +6,8 @@
 import { apiClient } from '@/lib/api-client';
 import type {
   ApiResponse,
-  UserListResponse,
-  UserDetailResponse,
   UserResponse,
   RoleResponse,
-  SystemStatsResponse,
   PermissionResponse,
   PaginationParams,
 } from '@/types/api';
@@ -19,7 +16,7 @@ export const adminService = {
   /**
    * Get all users with optional pagination
    */
-  async getAllUsers(params?: PaginationParams): Promise<UserListResponse> {
+  async getAllUsers(params?: PaginationParams): Promise<ApiResponse<UserResponse[]>> {
     const queryParams = new URLSearchParams();
 
     if (params) {
@@ -31,34 +28,34 @@ export const adminService = {
     }
 
     const endpoint = `/admin/users${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    return apiClient.get<UserListResponse>(endpoint);
+    return apiClient.get<UserResponse[]>(endpoint);
   },
 
   /**
    * Get user by ID
    */
-  async getUserById(userId: number): Promise<UserDetailResponse> {
-    return apiClient.get<UserDetailResponse>(`/admin/users/${userId}`);
+  async getUserById(userId: number): Promise<ApiResponse<UserResponse>> {
+    return apiClient.get<UserResponse>(`/admin/users/${userId}`);
   },
 
   /**
    * Get all roles
    */
   async getAllRoles(): Promise<ApiResponse<RoleResponse[]>> {
-    return apiClient.get<ApiResponse<RoleResponse[]>>('/admin/roles');
+    return apiClient.get<RoleResponse[]>('/admin/roles');
   },
 
   /**
    * Get system statistics
    */
-  async getSystemStats(): Promise<SystemStatsResponse> {
-    return apiClient.get<SystemStatsResponse>('/admin/stats');
+  async getSystemStats(): Promise<ApiResponse<{ total_users: number; total_videojuegos: number; total_desarrolladoras: number; roles_count: Record<string, number> }>> {
+    return apiClient.get<{ total_users: number; total_videojuegos: number; total_desarrolladoras: number; roles_count: Record<string, number> }>('/admin/stats');
   },
 
   /**
    * Get my permissions
    */
   async getMyPermissions(): Promise<ApiResponse<PermissionResponse[]>> {
-    return apiClient.get<ApiResponse<PermissionResponse[]>>('/admin/my-permissions');
+    return apiClient.get<PermissionResponse[]>('/admin/my-permissions');
   },
 };

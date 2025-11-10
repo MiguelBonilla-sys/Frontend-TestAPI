@@ -142,7 +142,7 @@ class ApiClient {
   /**
    * Make an API request
    */
-  async request<T = any>(
+  async request<T = unknown>(
     endpoint: string,
     config: RequestConfig = {}
   ): Promise<ApiResponse<T>> {
@@ -157,9 +157,9 @@ class ApiClient {
     const url = `${API_PROXY_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
     // Prepare headers
-    const requestHeaders: HeadersInit = {
+    const requestHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...headers,
+      ...headers as Record<string, string>,
     };
 
     // Add authorization header if needed
@@ -180,11 +180,13 @@ class ApiClient {
 
         if (newToken) {
           // Retry the request with new token
-          requestHeaders['Authorization'] = `Bearer ${newToken}`;
           return this.request<T>(endpoint, {
             ...config,
             skipRefresh: true, // Prevent infinite loop
-            headers: requestHeaders,
+            headers: {
+              ...requestHeaders,
+              'Authorization': `Bearer ${newToken}`,
+            },
           });
         }
       }
@@ -206,8 +208,9 @@ class ApiClient {
             errorMessage.includes('verification')
           ) {
             // Check if we have a temp_token in the response
-            const tempToken = (data as any).temp_token || (data as any).data?.temp_token;
-            const challengeId = (data as any).challenge_id || (data as any).data?.challenge_id;
+            const dataWithToken = data as { temp_token?: string; challenge_id?: string; data?: { temp_token?: string; challenge_id?: string } };
+            const tempToken = dataWithToken.temp_token || dataWithToken.data?.temp_token;
+            const challengeId = dataWithToken.challenge_id || dataWithToken.data?.challenge_id;
             
             if (tempToken) {
               // Redirect to 2FA verification page
@@ -243,13 +246,13 @@ class ApiClient {
    * Convenience methods for HTTP verbs
    */
 
-  async get<T = any>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
+  async get<T = unknown>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { ...config, method: 'GET' });
   }
 
-  async post<T = any>(
+  async post<T = unknown>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
@@ -259,9 +262,9 @@ class ApiClient {
     });
   }
 
-  async put<T = any>(
+  async put<T = unknown>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
@@ -271,9 +274,9 @@ class ApiClient {
     });
   }
 
-  async patch<T = any>(
+  async patch<T = unknown>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
@@ -283,7 +286,7 @@ class ApiClient {
     });
   }
 
-  async delete<T = any>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
+  async delete<T = unknown>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { ...config, method: 'DELETE' });
   }
 }

@@ -5,10 +5,11 @@
  * Page for verifying 2FA code after login
  */
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TwoFAVerify } from '@/components/2fa-verify';
 
-export default function Verify2FAPage() {
+function Verify2FAContent() {
   const searchParams = useSearchParams();
   const tempToken = searchParams.get('temp_token') || '';
   const challengeId = searchParams.get('challenge_id') || undefined;
@@ -27,6 +28,18 @@ export default function Verify2FAPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <TwoFAVerify tempToken={tempToken} challengeId={challengeId} />
     </div>
+  );
+}
+
+export default function Verify2FAPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="text-center">Cargando...</div>
+      </div>
+    }>
+      <Verify2FAContent />
+    </Suspense>
   );
 }
 

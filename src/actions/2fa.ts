@@ -18,7 +18,7 @@ const API_BASE_URL = process.env.API_BASE_URL || 'https://apiauthgames-productio
 interface ActionResult {
   success: boolean;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 /**
