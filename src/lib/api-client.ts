@@ -184,6 +184,15 @@ class ApiClient {
         headers: requestHeaders,
       });
 
+      // Parse response first to check error type
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        // If response is not JSON, create a basic error response
+        data = { message: `Request failed with status ${response.status}` };
+      }
+
       // Handle 401 Unauthorized - token expired
       if (response.status === 401 && useAuth && !skipRefresh) {
         const newToken = await this.refreshAccessToken();
@@ -199,24 +208,30 @@ class ApiClient {
             },
           });
         }
+        // If refresh failed, it already redirected to login, so return error response
+        return {
+          success: false,
+          message: 'Session expired. Please login again.',
+          timestamp: new Date().toISOString(),
+        } as ApiResponse<T>;
       }
-
-      // Parse response
-      const data = await response.json();
 
       // Handle error responses
       if (!response.ok) {
         const errorData = data as ErrorResponse;
         
-        // Handle 403 Forbidden - 2FA required
-        if (response.status === 403 && useAuth && typeof window !== 'undefined') {
+        // Handle 403 Forbidden - could be 2FA required or token expired
+        if (response.status === 403 && useAuth && !skipRefresh) {
           const errorMessage = errorData.message?.toLowerCase() || '';
-          if (
+          
+          // Check if it's a 2FA-related error
+          const is2FAError = 
             errorMessage.includes('2fa') ||
             errorMessage.includes('two factor') ||
             errorMessage.includes('otp') ||
-            errorMessage.includes('verification')
-          ) {
+            errorMessage.includes('verification');
+          
+          if (is2FAError && typeof window !== 'undefined') {
             // Check if we have a temp_token in the response
             const dataWithToken = data as { temp_token?: string; challenge_id?: string; data?: { temp_token?: string; challenge_id?: string } };
             const tempToken = dataWithToken.temp_token || dataWithToken.data?.temp_token;
@@ -233,6 +248,29 @@ class ApiClient {
               // Return error to prevent further execution
               throw new Error('2FA verification required');
             }
+          }
+          
+          // If not 2FA error, try to refresh token (might be expired/invalid)
+          if (!is2FAError) {
+            const newToken = await this.refreshAccessToken();
+
+            if (newToken) {
+              // Retry the request with new token
+              return this.request<T>(endpoint, {
+                ...config,
+                skipRefresh: true, // Prevent infinite loop
+                headers: {
+                  ...requestHeaders,
+                  'Authorization': `Bearer ${newToken}`,
+                },
+              });
+            }
+            // If refresh failed, it already redirected to login, so return error response
+            return {
+              success: false,
+              message: 'Session expired. Please login again.',
+              timestamp: new Date().toISOString(),
+            } as ApiResponse<T>;
           }
         }
         
