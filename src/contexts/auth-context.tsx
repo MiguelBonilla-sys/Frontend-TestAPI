@@ -69,6 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (response.success && response.data) {
               setUser(response.data);
               localStorage.setItem('user', JSON.stringify(response.data));
+              // Store tokens if they were returned (shouldn't happen, but just in case)
+              if (response.data && 'access_token' in response.data) {
+                const tokenData = response.data as unknown as { access_token?: string; refresh_token?: string };
+                if (tokenData.access_token && tokenData.refresh_token) {
+                  apiClient.setTokens(tokenData.access_token, tokenData.refresh_token);
+                }
+              }
               // Refresh 2FA status and permissions
               const [statusResponse, permissionsResponse] = await Promise.all([
                 twoFAService.get2FAStatus().catch(() => ({ success: false, data: { enabled: false } })),
@@ -81,9 +88,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               if (permissionsResponse.success && permissionsResponse.data) {
                 setPermissions(permissionsResponse.data.permissions || []);
               }
+            } else {
+              // Response was not successful, but don't clear user yet
+              // The middleware might have allowed access based on cookies
+              // Let the component handle the redirect if needed
+              console.warn('Failed to get user from API, but cookies might still be valid');
             }
           } catch (error) {
-            // No valid session
+            // No valid session - but don't clear immediately
+            // The middleware might have allowed access, so let it handle redirects
             console.error('No valid session found:', error);
           } finally {
             setIsLoading(false);

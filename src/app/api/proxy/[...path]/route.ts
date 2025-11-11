@@ -54,7 +54,16 @@ async function handleRequest(
     // Add body for methods that support it
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
       try {
-        const body = await request.text();
+        let body = await request.text();
+        
+        // Special handling for refresh endpoint: if body is empty, use refresh_token from cookies
+        if (path === 'auth/refresh' && (!body || body === '{}')) {
+          const refreshTokenFromCookie = cookieStore.get('refresh_token')?.value;
+          if (refreshTokenFromCookie) {
+            body = JSON.stringify({ refresh_token: refreshTokenFromCookie });
+          }
+        }
+        
         if (body) {
           requestOptions.body = body;
         }

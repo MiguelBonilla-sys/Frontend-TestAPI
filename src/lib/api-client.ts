@@ -139,10 +139,8 @@ class ApiClient {
     } catch (error) {
       console.error('Token refresh failed:', error);
       this.clearTokens();
-      // Redirect to login if we're on the client
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
+      // Don't redirect automatically - let the calling code decide
+      // This prevents redirects during initial load when tokens might be in cookies
       return null;
     } finally {
       this.isRefreshing = false;
@@ -194,6 +192,7 @@ class ApiClient {
       }
 
       // Handle 401 Unauthorized - token expired
+      // Only try to refresh if we had a token in the request (or cookies might have one)
       if (response.status === 401 && useAuth && !skipRefresh) {
         const newToken = await this.refreshAccessToken();
 
@@ -208,7 +207,7 @@ class ApiClient {
             },
           });
         }
-        // If refresh failed, it already redirected to login, so return error response
+        // If refresh failed, return error response (let caller decide what to do)
         return {
           success: false,
           message: 'Session expired. Please login again.',
@@ -251,6 +250,7 @@ class ApiClient {
           }
           
           // If not 2FA error, try to refresh token (might be expired/invalid)
+          // Only try to refresh if we had a token in the request (or cookies might have one)
           if (!is2FAError) {
             const newToken = await this.refreshAccessToken();
 
@@ -265,7 +265,7 @@ class ApiClient {
                 },
               });
             }
-            // If refresh failed, it already redirected to login, so return error response
+            // If refresh failed, return error response (let caller decide what to do)
             return {
               success: false,
               message: 'Session expired. Please login again.',
